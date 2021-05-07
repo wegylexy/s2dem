@@ -1,0 +1,2 @@
+#define s2dem_VERSION_MAJOR @s2dem_VERSION_MAJOR@
+#define s2dem_VERSION_MINOR @s2dem_VERSION_MINOR@
