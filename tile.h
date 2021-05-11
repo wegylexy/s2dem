@@ -14,7 +14,7 @@ public:
 
     T Get(size_t x, size_t y) const;
 
-    double Interpolate(double lat, double lon, bool bicubic = true) const;
+    double Peak(double lat, double lon) const;
 
 private:
     const size_t w_, h_;

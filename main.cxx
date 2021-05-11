@@ -114,7 +114,7 @@ int main(int argc, const char *argv[])
                             const auto ll = c.ToLatLng();
                             const auto lat = ll.lat().degrees(), lon = ll.lng().degrees();
                             const auto grid = static_cast<int>(90 - lat) / 45 * 6 + static_cast<int>(lon + 180) / 60;
-                            const auto value = values[i] = tiles[grid]->Interpolate(lat, lon);
+                            const auto value = values[i] = tiles[grid]->Peak(lat, lon);
                             if (value < min_value)
                                 min_value = value;
                             if (value > max_value)

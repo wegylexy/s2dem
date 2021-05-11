@@ -13,16 +13,6 @@ inline double RoundD(double d)
     return (static_cast<float>(d + 360) * 3600 - 1296e3) / 3600;
 }
 
-inline double UniformCatmullRom(const double a, const double b, const double c, const double d, double t)
-{
-    return .5 * (((3 * (b - c) + d - a) * t + 2 * a - 5 * b + 4 * c - d) * t + c - a) * t + b;
-}
-
-inline double Lerp(const double a, const double b, const double t)
-{
-    return a * (1 - t) + b * t;
-}
-
 static const TIFFFieldInfo Fields[] = {{42113, -1, -1, TIFF_ASCII, FIELD_CUSTOM, true, false, const_cast<char *>("GDAL_NODATA")}};
 
 namespace
@@ -97,30 +87,14 @@ T Tile<T, U>::Get(size_t x, size_t y) const
 }
 
 template <typename T, typename U>
-double Tile<T, U>::Interpolate(const double lat, const double lon, const bool bicubic) const
+double Tile<T, U>::Peak(const double lat, const double lon) const
 {
-    const double x = (lon - x0) * dx_1_, y = (y0 - lat) * dy_1_, rx = x - floor(x), ry = y - floor(y);
+    const double x = (lon - x0) * dx_1_, y = (y0 - lat) * dy_1_;
     const auto x_ = static_cast<size_t>(x), y_ = static_cast<size_t>(y),
                x2 = clamp(x_, size0, w_), y2 = clamp(y_, size0, h_),
                x3 = clamp(x_ + 1, size0, w_), y3 = clamp(y_ + 1, size0, h_);
-    if (bicubic)
-    {
-        const auto x1 = clamp(x_ - 1, size0, w_), y1 = clamp(y_ - 1, size0, h_),
-                   x4 = clamp(x_ + 2, size0, w_), y4 = clamp(y_ + 2, size0, h_);
-        return UniformCatmullRom(
-            UniformCatmullRom(data_[y1][x1], data_[y1][x2], data_[y1][x3], data_[y1][x4], rx),
-            UniformCatmullRom(data_[y2][x1], data_[y2][x2], data_[y2][x3], data_[y2][x4], rx),
-            UniformCatmullRom(data_[y3][x1], data_[y3][x2], data_[y3][x3], data_[y3][x4], rx),
-            UniformCatmullRom(data_[y4][x1], data_[y4][x2], data_[y4][x3], data_[y4][x4], rx),
-            ry);
-    }
-    else
-    {
-        return Lerp(
-            Lerp(data_[y2][x2], data_[y2][x3], rx),
-            Lerp(data_[y3][x2], data_[y3][x3], rx),
-            ry);
-    }
+    return max(max(data_[y2][x2], data_[y2][x3]),
+               max(data_[y3][x2], data_[y3][x3]));
 }
 
 template class Tile<int8_t>;
